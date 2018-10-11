@@ -1,9 +1,9 @@
 package main
 
 import (
-	// "os"
-	"strconv"
 	"fmt"
+	"strconv"
+
 	"./herd"
 )
 
@@ -18,6 +18,8 @@ func main() {
 	// mortalityRate := validateFloat32(os.Args[4])
 	// basicReproNum := validateFloat32(os.Args[5])
 
+	herd.Logger()
+
 	virusName := "EbolAIDS"
 	var mortalityRate float32 = 0.2
 	var basicReproNum float32 = 0.6
@@ -28,38 +30,39 @@ func main() {
 
 	// create virus
 	virus := herd.MakeVirus(
-		virusName, 
-		mortalityRate, 
+		virusName,
+		mortalityRate,
 		basicReproNum,
 	)
 
 	// create simulation
-	var people []int 
+	people := herd.MakePeople()
 	var newlyInfected []int
 	var currentInfected []int
 
 	sim := herd.MakeSimulation(
-		people, 
-		newlyInfected, 
-		virus, 
-		population, 
-		initialInfected, 
-		currentInfected, 
+		people,
+		newlyInfected,
+		virus,
+		population,
+		initialInfected,
+		currentInfected,
 		vacPercent,
 	)
 
-	sim.Populate() 
-	fmt.Print("Simulation populated")
 
+	sim.People = sim.Populate()
+	
 	// run loop
 	for sim.ShouldContinue() {
 		sim.Timestep()
-		fmt.Println("Timestep  |  People alive: ", sim.NumSurvivors())
+		fmt.Printf("Timestep  |  People alive: %d", sim.NumSurvivors())
+		herd.Log <- "Survivors: " + strconv.Itoa(sim.NumSurvivors())
 	}
 }
 
 func validateInt(s string) int {
-	if word,err := strconv.Atoi(s); err != nil {
+	if word, err := strconv.Atoi(s); err != nil {
 		panic(err)
 	} else {
 		return word
@@ -67,12 +70,9 @@ func validateInt(s string) int {
 }
 
 func validateFloat32(f string) float32 {
-	if word,err := strconv.ParseFloat(f, 32); err != nil {
+	if word, err := strconv.ParseFloat(f, 32); err != nil {
 		panic(err)
 	} else {
 		return float32(word)
 	}
 }
-
-
-
