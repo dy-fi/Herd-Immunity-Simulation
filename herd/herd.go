@@ -61,9 +61,28 @@ func MakePeople() []Person {
 	return ppl 
 }
 
-func s(i int) string {
+// S converts an int to a string
+func S(i int) string {
 	s := strconv.Itoa(i)
 	return s
+}
+
+// I converts a string to an int
+func I(s string) int {
+	if word, err := strconv.Atoi(s); err != nil {
+		panic(err)
+	} else {
+		return word
+	}
+}
+
+// F32 converts a string to a float32
+func F32(f string) float32 {
+	if word, err := strconv.ParseFloat(f, 32); err != nil {
+		panic(err)
+	} else {
+		return float32(word)
+	}
 }
 
 // Person methods
@@ -120,11 +139,20 @@ func (sim Simulation) Populate() []Person {
 		ppl = append(ppl, MakePerson(true, nextID, nil))
 		nextID++ 
 	}
+	Log <- "Vaccinated people loaded"
 	// populate initially infected
 	for i := 0; i < sim.initialInfected; i++ {
 		ppl = append(ppl, MakePerson(false, nextID, v))
 		nextID++
 	}
+	Log <- "Hosts loaded"
+	// populate remaining people
+	remaining := sim.population - (vacd + sim.initialInfected)
+	for i := 0; i < remaining; i++ {
+		ppl = append(ppl, MakePerson(false, nextID, nil))
+	}
+	Log <- "Normal civilians loaded"
+
 	Log <- "Simulation populated"
 	return ppl 
 }
@@ -141,7 +169,7 @@ func (sim Simulation) FindByID(id int) *Person {
 
 // returns a random person
 func (sim Simulation) findRandomPerson() *Person {
-	return sim.FindByID(rand.Intn(100))
+	return sim.FindByID(rand.Intn(len(sim.People)))
 }
 
 // died of disease chance
@@ -149,11 +177,11 @@ func (sim Simulation) infected(per *Person, vir *Virus) {
 	// survival chance
 	if rand.Float32() >= sim.virus.repro {
 		per.alive = false
-		Log <- s(per.id) + " died from infection"
+		Log <- S(per.id) + " died from infection"
 	}
 	// appends the id to the newly infected index
 	sim.newlyInfected = append(sim.newlyInfected, per.id)
-	Log <- s(per.id) + " became a host"
+	Log <- S(per.id) + " became a host"
 }
 
 // interaction between an infected and healthy non-vacced person
@@ -164,12 +192,12 @@ func (sim Simulation) interact(pArg1, pArg2 int) {
 	if  p1.alive && p2.alive {
 		// if p2 is vaccinated or has the virus do nothing
 		if p2.vac || p2.virus != nil {
-			Log <- "Interaction between " + s(p1.id) + " and " + s(p2.id) + " uneventful"
+			Log <- "Interaction between " + S(p1.id) + " and " + S(p2.id) + " uneventful"
 			return
 		}
 		// else infect p2
 		sim.infected(p2, p1.virus)
-		Log <- s(p1.id) + " infected " + s(p1.id)
+		Log <- S(p1.id) + " infected " + S(p1.id)
 	}
 } 
 

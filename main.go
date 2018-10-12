@@ -3,20 +3,19 @@ package main
 import (
 	"fmt"
 	"strconv"
-
 	"./herd"
 )
 
 func main() {
-	// // CLI args
+	// CLI args
 	// virusName := os.Args[3]
 
-	// // validate and convert
-	// population := validateInt(os.Args[1])
-	// vacPercent := validateFloat32(os.Args[2])
-	// initialInfected := validateInt(os.Args[6])
-	// mortalityRate := validateFloat32(os.Args[4])
-	// basicReproNum := validateFloat32(os.Args[5])
+	// validate and convert
+	// population := I(os.Args[1])
+	// vacPercent := F32(os.Args[2])
+	// initialInfected := I(os.Args[6])
+	// mortalityRate := F32(os.Args[4])
+	// basicReproNum := F32(os.Args[5])
 
 	herd.Logger()
 
@@ -50,29 +49,12 @@ func main() {
 		vacPercent,
 	)
 
-
 	sim.People = sim.Populate()
-	
+
 	// run loop
 	for sim.ShouldContinue() {
 		sim.Timestep()
 		fmt.Printf("Timestep  |  People alive: %d", sim.NumSurvivors())
 		herd.Log <- "Survivors: " + strconv.Itoa(sim.NumSurvivors())
-	}
-}
-
-func validateInt(s string) int {
-	if word, err := strconv.Atoi(s); err != nil {
-		panic(err)
-	} else {
-		return word
-	}
-}
-
-func validateFloat32(f string) float32 {
-	if word, err := strconv.ParseFloat(f, 32); err != nil {
-		panic(err)
-	} else {
-		return float32(word)
 	}
 }
