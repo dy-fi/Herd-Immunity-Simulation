@@ -3,7 +3,7 @@ package main
 import (
 	"fmt"
 	"strconv"
-	"./herd"
+	"os"
 )
 
 func main() {
@@ -17,29 +17,33 @@ func main() {
 	// mortalityRate := F32(os.Args[4])
 	// basicReproNum := F32(os.Args[5])
 
-	herd.Logger()
-
 	virusName := "EbolAIDS"
 	var mortalityRate float32 = 0.2
 	var basicReproNum float32 = 0.6
+
+	// set file
+	var f, err = os.Create(virusName + "_log")
+	Check(err)
+	defer f.Close()
 
 	population := 10000
 	initialInfected := 1000
 	var vacPercent float32 = 0.6
 
 	// create virus
-	virus := herd.MakeVirus(
+	virus := MakeVirus(
 		virusName,
 		mortalityRate,
 		basicReproNum,
 	)
 
 	// create simulation
-	people := herd.MakePeople()
+	var people = MakePeople()
 	var newlyInfected []int
 	var currentInfected []int
 
-	sim := herd.MakeSimulation(
+	sim := MakeSimulation(
+		f,
 		people,
 		newlyInfected,
 		virus,
@@ -49,12 +53,10 @@ func main() {
 		vacPercent,
 	)
 
-	sim.People = sim.Populate()
-
 	// run loop
-	for sim.ShouldContinue() {
+	for sim.ShouldContinue() == true {
 		sim.Timestep()
 		fmt.Printf("Timestep  |  People alive: %d", sim.NumSurvivors())
-		herd.Log <- "Survivors: " + strconv.Itoa(sim.NumSurvivors())
+		Logger(sim.f, "Survivors: " + strconv.Itoa(sim.NumSurvivors()))
 	}
 }
