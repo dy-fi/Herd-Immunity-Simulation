@@ -120,9 +120,19 @@ func (sim Simulation) NumSurvivors() int {
 	return survivors 
 }
 
+func (sim Simulation) numInfected() int {
+	healthy := 0
+	for _,p := range(sim.People) {
+		if p.virus == nil {
+			healthy++
+		}
+	}
+	return healthy
+}
+
 // ShouldContinue checks if program should continue
 func (sim Simulation) ShouldContinue() bool {
-	if sim.NumSurvivors() > 0 {
+	if sim.NumSurvivors() > 0 || sim.numInfected() > 0{
 		sim.Logger("ShouldContinue: True")
 		return true
 	}
