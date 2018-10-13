@@ -98,7 +98,7 @@ func (p Person) getID () int {
 }
 
 // InfectionSurvivalChance represents the survival chance
-func (p Person) didSurviveInfection() (bool) {
+func (p Person) didSurviveInfection() bool {
 	if p.virus.mortality > rand.Float32() {
 		p.alive = false
 		return false
@@ -123,10 +123,10 @@ func (sim Simulation) NumSurvivors() int {
 // ShouldContinue checks if program should continue
 func (sim Simulation) ShouldContinue() bool {
 	if sim.NumSurvivors() > 0 {
-		Logger(sim.f,  "ShouldContinue: True")
+		sim.Logger("ShouldContinue: True")
 		return true
 	}
-	Logger(sim.f,  "Simulation ending...")
+	sim.Logger("Simulation ending...")
 	// Go has automatic garbage collection so ending without deleting objects is okay
 	return false
 }
@@ -136,7 +136,7 @@ func Populate(pop int, inf int, vac float32, v *Virus) *[]Person {
 	nextID := 0
 	var pSlice = make([]Person, pop)
 
-	vacd := int(float32(pop) * vac) 
+	vacd := int(float32(pop) * vac)
 	remaining := pop - (vacd + inf)
 
 	for i := 0; i < vacd; i++ {
@@ -152,30 +152,30 @@ func Populate(pop int, inf int, vac float32, v *Virus) *[]Person {
 }
 
 // FindByID finds a user by their id
-func (sim Simulation) FindByID(id int) *Person {
-	for _,p := range sim.People {
-		if p.id == id {
-			return &p 
-		}
+func (sim Simulation) FindByID(ID int) *Person {
+	for _,p := range(sim.People) {
+		if p.getID() == ID {
+			return &p
+		} 
 	}
-	return nil
+	panic("Person not found")
 }
 
 // returns a random person
 func (sim Simulation) findRandomPerson() *Person {
-	return sim.FindByID(rand.Intn(len(sim.People)))
+	return sim.FindByID(rand.Intn(sim.population))
 }
 
 // died of disease chance
 func (sim Simulation) infected(per *Person, vir *Virus) {
 	// survival chance
-	if rand.Float32() >= sim.virus.repro {
+	if rand.Float32() <= sim.virus.repro {
 		per.alive = false
-		Logger(sim.f,  S(per.id) + " died from infection")
+		sim.Logger(S(per.id) + " died from infection")
 	}
 	// appends the id to the newly infected index
 	sim.newlyInfected = append(sim.newlyInfected, per.id)
-	Logger(sim.f,  S(per.id) + " became a host")
+	sim.Logger(S(per.id) + " became a host")
 }
 
 // interaction between an infected and healthy non-vacced person
@@ -185,19 +185,19 @@ func (sim Simulation) interact(pArg1, pArg2 int) {
 	// check both are alive
 	if  p1.alive && p2.alive {
 		// if p2 is vaccinated or has the virus do nothing
-		if p2.vac || p2.virus != nil {
-			Logger(sim.f,  "Interaction between " + S(p1.id) + " and " + S(p2.id) + " uneventful")
+		if p2.vac || p2.virus != p1.virus {
+			sim.Logger("Interaction between " + S(p1.id) + " and " + S(p2.id) + " uneventful")
 			return
 		}
 		// else infect p2
 		sim.infected(p2, p1.virus)
-		Logger(sim.f,  S(p1.id) + " infected " + S(p1.id))
+		sim.Logger(S(p1.id) + " infected " + S(p1.id))
 	}
 } 
 
 // Timestep represents 1 exposure period
 func (sim Simulation) Timestep () {
-	Logger(sim.f,  "Timestepping...")
+	sim.Logger("Timestepping...")
 	for _,p := range sim.currentInfected {
 		for i := 100; i > 0; i-- {
 			sim.interact(p, sim.findRandomPerson().getID())
@@ -207,7 +207,7 @@ func (sim Simulation) Timestep () {
 	for _,i := range sim.newlyInfected {
 		if (sim.FindByID(i).didSurviveInfection()) {
 			sim.currentInfected = append(sim.currentInfected, sim.FindByID(i).getID())
-			Logger(sim.f,  "newly infected added to current infected list")
+			sim.Logger("newly infected added to current infected list")
 		}
 	}
 }

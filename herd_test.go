@@ -2,6 +2,7 @@ package main
 
 import (
 	"testing"
+	"os"
 )
 
 // test virus lethal
@@ -18,7 +19,11 @@ var peopleTest = MakePeople()
 var newlyInfectedTest []int
 var currentInfectedTest []int
 
+var f, err = os.Create(vtest.name + "_test")
+
+
 var stest = MakeSimulation(
+	f,
 	peopleTest,
 	newlyInfectedTest,
 	vtest,
@@ -28,12 +33,12 @@ var stest = MakeSimulation(
 	vacPercentTest,
 )
 
-// func TestPopulate(t *testing.T) {
-// 	Populate()
-// 	if len(peopleTest) != populationTest {
-// 		t.Error("Test failed.  Populate does not populate the simulation with the correct number of people", len(peopleTest), populationTest)
-// 	}	
-// }
+func TestPopulate(t *testing.T) {
+	stest.People = *Populate(stest.population, stest.initialInfected, stest.vacPercent, &stest.virus)
+	if len(stest.People) != populationTest {
+		t.Error("Test failed.  Populate does not populate the simulation with the correct number of people", len(peopleTest), populationTest)
+	}	
+}
 
 func TestDidSurviveInfection(t *testing.T) {
 	vtest.mortality = 1.0
@@ -56,8 +61,8 @@ func TestShouldContinue(t *testing.T) {
 
 func TestFindByID(t *testing.T) {
 	i := stest.FindByID(0)
-	if i != &ptest {
-		t.Error("\nTest failed")
+	if i.getID() != ptest.getID() {
+		t.Error("\nTest failed", i.getID(), (ptest.getID()))
 	}
 }
 
@@ -78,3 +83,5 @@ func TestInfected(t *testing.T) {
 		t.Error("\nTest failed.  infected killed a person when it shouldn't have")
 	}
 }
+
+

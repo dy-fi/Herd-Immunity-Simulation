@@ -57,6 +57,6 @@ func main() {
 	for sim.ShouldContinue() == true {
 		sim.Timestep()
 		fmt.Printf("Timestep  |  People alive: %d", sim.NumSurvivors())
-		Logger(sim.f, "Survivors: " + strconv.Itoa(sim.NumSurvivors()))
+		sim.Logger("Survivors: " + strconv.Itoa(sim.NumSurvivors()))
 	}
 }

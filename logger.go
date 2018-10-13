@@ -2,13 +2,12 @@ package main
 
 import (
 	"fmt"
-	"os"
 )
 
 // Logger prints and logs program actions to a file
-func Logger (f *os.File, s string) {
+func (sim Simulation) Logger (s string) {
 	fmt.Print(s)
-	f.WriteString(s)
+	sim.f.WriteString(s)
 }
 
 // Check checks for errors
